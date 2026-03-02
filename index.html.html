@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Expérience — Gestion Agence</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --cream:#F4F1EB; --sand:#E5DCC8; --deep:#1A3830; --deep2:#122B24;
+  --gold:#B8943A; --gold-light:#CCA94E; --gold-pale:#F0E4C0;
+  --white:#FFFFFF; --text:#1A3830; --text-muted:#6B7C6A;
+  --success:#2D7A5A; --danger:#C44040;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;}
+
+/* ===== LOGIN ===== */
+#loginScreen {
+  position:fixed;inset:0;z-index:9999;
+  background:var(--deep2);
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;
+}
+.login-box {
+  background:white;border-radius:24px;padding:2.5rem;
+  width:100%;max-width:400px;
+  border-top:4px solid var(--gold);
+  box-shadow:0 30px 80px rgba(0,0,0,0.4);
+  animation:loginIn 0.5s ease;
+}
+@keyframes loginIn{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+.login-logo {
+  text-align:center;margin-bottom:1.75rem;
+}
+.login-icon {
+  width:64px;height:64px;border-radius:50%;
+  background:var(--deep);margin:0 auto 0.75rem;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;border:3px solid var(--gold);
+}
+.login-title {
+  font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;
+  color:var(--deep);
+}
+.login-sub {
+  font-size:0.75rem;color:var(--text-muted);margin-top:0.2rem;
+  letter-spacing:0.08em;text-transform:uppercase;
+}
+.login-form{display:flex;flex-direction:column;gap:1rem;}
+.login-form .form-group{display:flex;flex-direction:column;gap:0.4rem;}
+.login-form label{font-size:0.85rem;font-weight:600;color:var(--text);}
+.login-form input{
+  padding:0.8rem 1rem;border:1.5px solid var(--sand);border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;
+  background:var(--cream);transition:border-color 0.2s;
+}
+.login-form input:focus{border-color:var(--gold);background:white;}
+.login-error{
+  background:rgba(196,64,64,0.1);border:1px solid rgba(196,64,64,0.3);
+  color:var(--danger);padding:0.65rem 1rem;border-radius:8px;
+  font-size:0.85rem;display:none;
+}
+.btn-login{
+  padding:0.9rem;background:var(--deep);color:white;
+  border:none;border-radius:12px;font-family:'DM Sans',sans-serif;
+  font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;
+  margin-top:0.25rem;
+}
+.btn-login:hover{background:var(--gold);color:var(--deep);}
+.login-hint{font-size:0.75rem;color:var(--text-muted);text-align:center;margin-top:0.5rem;}
+
+/* ===== NAV ===== */
+nav {
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0.75rem 2rem;
+  background:var(--deep);border-bottom:2px solid var(--gold);
+  box-shadow:0 4px 20px rgba(0,0,0,0.2);
+}
+.nav-logo{display:flex;align-items:center;gap:0.7rem;}
+.nav-logo-icon{
+  width:40px;height:40px;background:var(--gold);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;
+}
+.nav-logo-text{line-height:1.1;}
+.nav-logo-top{font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;color:white;letter-spacing:0.04em;}
+.nav-logo-sub{font-size:0.58rem;font-weight:500;color:var(--gold-light);letter-spacing:0.12em;text-transform:uppercase;}
+.nav-tabs{display:flex;gap:0.2rem;background:rgba(255,255,255,0.07);padding:0.28rem;border-radius:50px;}
+.nav-tab{
+  padding:0.45rem 1rem;border:none;background:transparent;border-radius:50px;
+  font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:500;
+  color:rgba(255,255,255,0.55);cursor:pointer;transition:all 0.25s;white-space:nowrap;
+}
+.nav-tab.active{background:var(--gold);color:var(--deep);font-weight:700;}
+.nav-tab:hover:not(.active){color:white;background:rgba(255,255,255,0.1);}
+.nav-right{display:flex;align-items:center;gap:0.75rem;}
+.nav-save-badge{
+  background:rgba(184,148,58,0.2);border:1px solid rgba(184,148,58,0.4);
+  color:var(--gold-light);padding:0.25rem 0.7rem;border-radius:50px;
+  font-size:0.7rem;font-weight:600;
+}
+.user-avatar{
+  width:34px;height:34px;border-radius:50%;background:var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:0.75rem;color:var(--deep);
+  border:2px solid rgba(255,255,255,0.2);cursor:pointer;
+}
+
+/* ===== PAGES ===== */
+.page{display:none;padding-top:72px;min-height:100vh;}
+.page.active{display:block;}
+
+/* ===== HERO ===== */
+.hero{
+  background:var(--deep2);padding:4rem 2.5rem 3rem;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:380px;height:380px;border-radius:50%;
+  background:radial-gradient(circle,rgba(184,148,58,0.15),transparent 70%);
+}
+.hero::after{
+  content:'';position:absolute;bottom:-40px;left:10%;
+  width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(184,148,58,0.08),transparent 70%);
+}
+.hero-content{position:relative;max-width:680px;z-index:1;}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  background:rgba(184,148,58,0.2);border:1px solid rgba(184,148,58,0.4);
+  color:var(--gold-light);padding:0.32rem 0.9rem;border-radius:50px;
+  font-size:0.75rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1.2rem;
+}
+.hero h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2rem,4.5vw,3.4rem);font-weight:900;line-height:1.1;
+  color:white;margin-bottom:0.65rem;
+}
+.hero h1 em{color:var(--gold);font-style:italic;}
+.hero p{color:rgba(255,255,255,0.5);font-size:1rem;margin-bottom:1.75rem;max-width:480px;}
+.hero-services{display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.75rem;}
+.hero-service{
+  display:flex;align-items:center;gap:0.4rem;
+  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);
+  padding:0.4rem 0.85rem;border-radius:50px;font-size:0.78rem;color:rgba(255,255,255,0.75);
+}
+.search-bar{
+  display:flex;gap:0.65rem;flex-wrap:wrap;
+  background:rgba(255,255,255,0.06);padding:0.9rem;border-radius:14px;
+  border:1px solid rgba(255,255,255,0.1);
+}
+.search-bar input,.search-bar select{
+  flex:1;min-width:140px;background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.15);border-radius:9px;
+  padding:0.65rem 0.9rem;color:white;font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;
+}
+.search-bar input::placeholder{color:rgba(255,255,255,0.35);}
+.search-bar select option{background:var(--deep2);color:white;}
+.btn-search{
+  background:var(--gold);color:var(--deep);border:none;border-radius:9px;
+  padding:0.65rem 1.3rem;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;
+  transition:all 0.2s;white-space:nowrap;
+}
+.btn-search:hover{background:var(--gold-light);transform:translateY(-1px);}
+
+/* ===== GRID ===== */
+.section{padding:2.25rem 2.5rem;}
+.section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.5rem;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--deep);}
+.gold-divider{width:46px;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:2px;margin:0.4rem 0 1.1rem;}
+.destinations-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.4rem;}
+.dest-card{
+  border-radius:16px;overflow:hidden;background:white;
+  box-shadow:0 4px 18px rgba(26,56,48,0.1);transition:all 0.3s;cursor:pointer;
+  border:1px solid rgba(184,148,58,0.1);
+}
+.dest-card:hover{transform:translateY(-5px);box-shadow:0 14px 40px rgba(26,56,48,0.17);}
+.dest-image{height:180px;position:relative;overflow:hidden;}
+.dest-image-bg{width:100%;height:100%;transition:transform 0.4s;}
+.dest-card:hover .dest-image-bg{transform:scale(1.06);}
+.dest-badge{
+  position:absolute;top:0.8rem;right:0.8rem;
+  background:rgba(26,56,48,0.82);backdrop-filter:blur(6px);
+  color:var(--gold-light);padding:0.25rem 0.65rem;border-radius:50px;
+  font-size:0.7rem;font-weight:700;
+}
+.dest-badge.promo{background:#B83A3A;color:white;}
+.dest-body{padding:1.1rem;}
+.dest-country{font-size:0.7rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;}
+.dest-name{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin:0.18rem 0 0.45rem;color:var(--deep);}
+.dest-meta{display:flex;gap:0.7rem;font-size:0.76rem;color:var(--text-muted);margin-bottom:0.9rem;flex-wrap:wrap;}
+.dest-footer{display:flex;align-items:center;justify-content:space-between;}
+.dest-price{font-size:1.15rem;font-weight:700;color:var(--deep);}
+.dest-price-label{font-size:0.68rem;font-weight:500;color:var(--text-muted);display:block;margin-bottom:1px;}
+.dest-price span{font-size:0.75rem;font-weight:400;color:var(--text-muted);}
+.btn-book{
+  background:var(--deep);color:white;border:none;
+  padding:0.5rem 1.05rem;border-radius:50px;
+  font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.8rem;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-book:hover{background:var(--gold);color:var(--deep);}
+
+/* ===== RESERVATION ===== */
+.reservation-layout{display:grid;grid-template-columns:1fr 355px;gap:1.75rem;padding:2rem 2.5rem;}
+.reservation-form{background:white;border-radius:18px;padding:1.75rem;box-shadow:0 4px 18px rgba(26,56,48,0.07);}
+.form-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:1.5rem;color:var(--deep);}
+.form-section{margin-bottom:1.5rem;}
+.form-section-label{
+  font-size:0.7rem;font-weight:700;color:var(--gold);text-transform:uppercase;
+  letter-spacing:0.12em;margin-bottom:0.65rem;padding-bottom:0.45rem;border-bottom:1px solid var(--sand);
+}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;margin-bottom:0.9rem;}
+.form-group{display:flex;flex-direction:column;gap:0.35rem;}
+.form-group label{font-size:0.83rem;font-weight:500;color:var(--text);}
+.form-group input,.form-group select,.form-group textarea{
+  padding:0.65rem 0.9rem;border:1.5px solid var(--sand);border-radius:9px;
+  font-family:'DM Sans',sans-serif;font-size:0.87rem;color:var(--text);
+  background:var(--cream);outline:none;transition:border-color 0.2s;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold);background:white;}
+.form-group textarea{resize:vertical;min-height:75px;}
+.btn-primary{
+  width:100%;padding:0.9rem;background:var(--deep);color:white;
+  border:none;border-radius:11px;font-family:'DM Sans',sans-serif;
+  font-size:0.95rem;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:0.4rem;
+}
+.btn-primary:hover{background:var(--gold);color:var(--deep);}
+.reservation-summary{
+  background:var(--deep2);color:white;border-radius:18px;padding:1.6rem;
+  height:fit-content;position:sticky;top:88px;border:1px solid rgba(184,148,58,0.2);
+}
+.summary-title{
+  font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;
+  margin-bottom:1.3rem;color:var(--gold-light);padding-bottom:0.7rem;
+  border-bottom:1px solid rgba(184,148,58,0.25);
+}
+.summary-dest{background:rgba(255,255,255,0.07);border-radius:11px;padding:0.9rem;margin-bottom:1.3rem;}
+.summary-dest-name{font-size:1rem;font-weight:700;margin-bottom:0.2rem;}
+.summary-dest-sub{font-size:0.76rem;color:rgba(255,255,255,0.42);}
+.summary-line{display:flex;justify-content:space-between;padding:0.45rem 0;font-size:0.86rem;color:rgba(255,255,255,0.62);}
+.summary-line.total{border-top:1px solid rgba(184,148,58,0.3);margin-top:0.45rem;padding-top:0.9rem;color:var(--gold-light);font-weight:700;font-size:1rem;}
+
+/* ===== CRM ===== */
+.crm-layout{padding:2rem 2.5rem;}
+.crm-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1rem;margin-bottom:1.75rem;}
+.stat-card{
+  background:white;border-radius:14px;padding:1.3rem;
+  box-shadow:0 2px 10px rgba(26,56,48,0.07);border-left:4px solid transparent;
+}
+.stat-card.c1{border-color:var(--deep);}
+.stat-card.c2{border-color:var(--gold);}
+.stat-card.c3{border-color:var(--success);}
+.stat-card.c4{border-color:#B8943A;}
+.stat-value{font-size:1.8rem;font-weight:700;font-family:'Playfair Display',serif;color:var(--deep);}
+.stat-label{font-size:0.76rem;color:var(--text-muted);margin-top:0.2rem;font-weight:500;}
+.table-wrap{background:white;border-radius:16px;box-shadow:0 2px 10px rgba(26,56,48,0.07);overflow:hidden;}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid var(--sand);}
+.table-title{font-weight:700;font-size:0.95rem;color:var(--deep);}
+.btn-add{
+  background:var(--deep);color:white;border:none;border-radius:8px;
+  padding:0.45rem 0.9rem;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s;
+}
+.btn-add:hover{background:var(--gold);color:var(--deep);}
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{
+  text-align:left;padding:0.65rem 1.4rem;font-size:0.7rem;font-weight:700;
+  color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;
+  background:var(--cream);border-bottom:1px solid var(--sand);
+}
+.data-table td{padding:0.9rem 1.4rem;font-size:0.86rem;border-bottom:1px solid rgba(229,220,200,0.45);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:rgba(244,241,235,0.7);}
+.client-name-cell{display:flex;align-items:center;gap:0.65rem;}
+.client-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;color:white;flex-shrink:0;}
+.status-badge{display:inline-block;padding:0.22rem 0.7rem;border-radius:50px;font-size:0.7rem;font-weight:700;letter-spacing:0.03em;}
+.status-badge.vip{background:rgba(184,148,58,0.15);color:var(--gold);}
+.status-badge.actif{background:rgba(45,122,90,0.12);color:var(--success);}
+.status-badge.prospect{background:rgba(26,56,48,0.1);color:var(--deep);}
+.status-badge.confirmé{background:rgba(45,122,90,0.12);color:var(--success);}
+.status-badge.en-attente{background:rgba(184,148,58,0.12);color:var(--gold);}
+.status-badge.annulé{background:rgba(196,64,64,0.12);color:var(--danger);}
+.amount{font-weight:600;color:var(--deep);}
+
+/* ===== DEVIS ===== */
+.devis-layout{padding:2rem 2.5rem;}
+.devis-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin-bottom:1.75rem;}
+
+/* ===== MODAL ===== */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(18,43,36,0.65);backdrop-filter:blur(4px);
+  z-index:2000;align-items:center;justify-content:center;padding:1rem;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:white;border-radius:20px;padding:1.75rem;
+  width:100%;max-width:500px;max-height:92vh;overflow-y:auto;
+  animation:slideUp 0.3s ease;border-top:4px solid var(--gold);
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem;}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--deep);}
+.modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);line-height:1;}
+.dest-selector-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;}
+.dest-selector-item{
+  padding:0.9rem;border-radius:11px;border:2px solid var(--sand);
+  cursor:pointer;transition:all 0.2s;
+}
+.dest-selector-item:hover,.dest-selector-item.selected{border-color:var(--gold);background:var(--gold-pale);}
+.dest-selector-name{font-weight:700;font-size:0.9rem;color:var(--deep);}
+.dest-selector-price{font-size:0.76rem;color:var(--text-muted);margin-top:0.15rem;}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:3000;display:flex;flex-direction:column;gap:0.65rem;}
+.toast{
+  background:var(--deep);color:white;padding:0.9rem 1.1rem;border-radius:11px;
+  display:flex;align-items:center;gap:0.65rem;
+  box-shadow:0 8px 28px rgba(0,0,0,0.25);min-width:260px;max-width:340px;
+  animation:toastIn 0.3s ease;font-size:0.88rem;
+}
+.toast.success{border-left:4px solid var(--gold);}
+.toast.error{border-left:4px solid var(--danger);}
+@keyframes toastIn{from{opacity:0;transform:translateX(18px);}to{opacity:1;transform:translateX(0);}}
+
+/* ===== DESTINATION BACKGROUNDS ===== */
+.bg-bali{background:linear-gradient(135deg,#2D7A6A,#1A4A40);}
+.bg-dubai{background:linear-gradient(135deg,#7A5A1A,#4A3208);}
+.bg-maroc{background:linear-gradient(135deg,#1A3830,#0D2018);}
+.bg-istanbul{background:linear-gradient(135deg,#6A2A1A,#3A1008);}
+.bg-paris{background:linear-gradient(135deg,#2A4A6A,#1A2A45);}
+.bg-dakar{background:linear-gradient(135deg,#7A4A1A,#4A2A08);}
+.bg-abidjan{background:linear-gradient(135deg,#1A5A3A,#0D3020);}
+.bg-thai{background:linear-gradient(135deg,#3A6A2A,#1A3A10);}
+.dest-image-inner{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;}
+.dest-emoji{font-size:2.6rem;margin-bottom:0.35rem;}
+.dest-emoji-label{font-size:0.85rem;font-weight:600;opacity:0.88;font-family:'Playfair Display',serif;font-style:italic;}
+
+/* ===== SERVICES STRIP ===== */
+.services-strip{background:var(--deep);padding:0.9rem 2.5rem;display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;}
+.strip-item{display:flex;align-items:center;gap:0.4rem;color:rgba(255,255,255,0.65);font-size:0.8rem;}
+.strip-item span{color:var(--gold);font-weight:700;}
+
+/* ===== MOBILE NAV ===== */
+.mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--deep);border-top:2px solid rgba(184,148,58,0.35);
+  z-index:1000;padding:0.4rem 0.5rem;
+  justify-content:space-around;
+  padding-bottom:env(safe-area-inset-bottom,0.4rem);
+}
+.mobile-nav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:0.18rem;
+  background:none;border:none;color:rgba(255,255,255,0.45);
+  font-family:'DM Sans',sans-serif;font-size:0.62rem;font-weight:500;
+  cursor:pointer;padding:0.35rem 0.5rem;border-radius:10px;transition:all 0.2s;flex:1;
+}
+.mobile-nav-btn.active{color:var(--gold);}
+.mobile-nav-btn .mn-icon{font-size:1.25rem;}
+
+/* ===== PRINT / PDF styles ===== */
+.pdf-preview{
+  display:none;position:fixed;inset:0;z-index:4000;
+  background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:1rem;
+}
+.pdf-preview.open{display:flex;}
+.pdf-box{
+  background:white;border-radius:16px;width:100%;max-width:680px;
+  max-height:92vh;overflow-y:auto;
+  box-shadow:0 30px 80px rgba(0,0,0,0.4);
+}
+.pdf-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 1.5rem;border-bottom:1px solid var(--sand);background:var(--cream);border-radius:16px 16px 0 0;
+}
+.pdf-toolbar-title{font-weight:700;font-size:0.95rem;color:var(--deep);}
+.pdf-toolbar-actions{display:flex;gap:0.65rem;}
+.btn-pdf-action{
+  padding:0.45rem 1rem;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;
+  font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s;
+}
+.btn-pdf-print{background:var(--deep);color:white;}
+.btn-pdf-close{background:var(--sand);color:var(--text);}
+.btn-pdf-print:hover{background:var(--gold);color:var(--deep);}
+
+/* The actual invoice document */
+#invoiceDoc{padding:2rem;}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid var(--sand);}
+.inv-logo-text{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--deep);}
+.inv-logo-sub{font-size:0.72rem;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;}
+.inv-meta{text-align:right;}
+.inv-ref{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--gold);}
+.inv-date{font-size:0.82rem;color:var(--text-muted);}
+.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem;}
+.inv-party-label{font-size:0.7rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;}
+.inv-party-name{font-weight:700;font-size:1rem;color:var(--deep);}
+.inv-party-detail{font-size:0.85rem;color:var(--text-muted);margin-top:0.15rem;}
+.inv-table{width:100%;border-collapse:collapse;margin-bottom:1.5rem;}
+.inv-table th{background:var(--deep);color:white;padding:0.65rem 1rem;text-align:left;font-size:0.8rem;font-weight:600;}
+.inv-table td{padding:0.75rem 1rem;border-bottom:1px solid var(--sand);font-size:0.88rem;}
+.inv-table tr:last-child td{border-bottom:none;}
+.inv-totals{margin-left:auto;width:260px;}
+.inv-total-line{display:flex;justify-content:space-between;padding:0.4rem 0;font-size:0.88rem;color:var(--text-muted);}
+.inv-total-line.grand{
+  border-top:2px solid var(--deep);margin-top:0.5rem;padding-top:0.75rem;
+  font-weight:700;font-size:1.05rem;color:var(--deep);
+}
+.inv-footer{
+  margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--sand);
+  font-size:0.78rem;color:var(--text-muted);text-align:center;
+}
+.inv-status-stamp{
+  display:inline-block;padding:0.4rem 1.2rem;
+  border-radius:8px;font-weight:700;font-size:0.85rem;margin-bottom:0.5rem;
+}
+.inv-status-stamp.confirmé{background:rgba(45,122,90,0.12);color:var(--success);border:2px solid var(--success);}
+.inv-status-stamp.en-attente{background:rgba(184,148,58,0.12);color:var(--gold);border:2px solid var(--gold);}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  nav{padding:0.7rem 1rem;}
+  .nav-tabs{display:none;}
+  .mobile-nav{display:flex;}
+  .page{padding-bottom:70px;}
+  .reservation-layout{grid-template-columns:1fr;padding:1.25rem 1rem;}
+  .crm-stats{grid-template-columns:1fr 1fr;}
+  .devis-stats{grid-template-columns:1fr 1fr;}
+  .destinations-grid{grid-template-columns:1fr;}
+  .section{padding:1.75rem 1rem;}
+  .hero{padding:2.75rem 1rem 2.25rem;}
+  .crm-layout,.devis-layout{padding:1.5rem 1rem;}
+  .form-row{grid-template-columns:1fr;}
+  .inv-parties{grid-template-columns:1fr;}
+  .inv-totals{width:100%;}
+  .dest-selector-grid{grid-template-columns:1fr;}
+  .services-strip{padding:0.9rem 1rem;gap:1rem;}
+}
+@media(max-width:480px){
+  .crm-stats{grid-template-columns:1fr 1fr;}
+  .stat-value{font-size:1.5rem;}
+  .login-box{padding:1.75rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-icon">🗝️</div>
+      <div class="login-title">TRAVEL EXPÉRIENCE</div>
+      <div class="login-sub">Assistance Visa · Billeterie · Tour Opérateur</div>
+    </div>
+    <div class="login-form">
+      <div class="form-group">
+        <label>Identifiant</label>
+        <input type="text" id="loginUser" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="login-error" id="loginError">❌ Identifiant ou mot de passe incorrect.</div>
+      <button class="btn-login" onclick="doLogin()">🔐 Connexion</button>
+      <div class="login-hint">Identifiant : <strong>admin</strong> &nbsp;|&nbsp; Mot de passe : <strong>travel2025</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🗝️</div>
+    <div class="nav-logo-text">
+      <div class="nav-logo-top">TRAVEL EXPÉRIENCE</div>
+      <div class="nav-logo-sub">Visa · Billeterie · Tour Opérateur</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('catalogue')">✈ Destinations</button>
+    <button class="nav-tab" onclick="showPage('reservation')">📋 Réservation</button>
+    <button class="nav-tab" onclick="showPage('crm')">👥 Clients</button>
+    <button class="nav-tab" onclick="showPage('devis')">💼 Devis & Factures</button>
+  </div>
+  <div class="nav-right">
+    <span class="nav-save-badge" id="saveBadge">💾 Sauvegardé</span>
+    <div class="user-avatar" onclick="doLogout()" title="Déconnexion">AD</div>
+  </div>
+</nav>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav">
+  <button class="mobile-nav-btn active" onclick="showPage('catalogue')"><span class="mn-icon">✈</span>Destinations</button>
+  <button class="mobile-nav-btn" onclick="showPage('reservation')"><span class="mn-icon">📋</span>Réserver</button>
+  <button class="mobile-nav-btn" onclick="showPage('crm')"><span class="mn-icon">👥</span>Clients</button>
+  <button class="mobile-nav-btn" onclick="showPage('devis')"><span class="mn-icon">💼</span>Devis</button>
+</div>
+
+<!-- ===== PAGE 1: CATALOGUE ===== -->
+<div id="page-catalogue" class="page active">
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-tag">✦ Catalogue 2025 — Travel Expérience</div>
+      <h1>Voyagez avec<br><em>confiance & style</em></h1>
+      <div style="width:46px;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:2px;margin:0.5rem 0 1rem;"></div>
+      <p>Des séjours d'exception en Afrique et dans le monde, avec accompagnement visa inclus.</p>
+      <div class="hero-services">
+        <div class="hero-service">🛂 Assistance Visa</div>
+        <div class="hero-service">🎫 Billeterie Aérienne</div>
+        <div class="hero-service">🗺 Tour Opérateur</div>
+      </div>
+      <div class="search-bar">
+        <input type="text" placeholder="🔍 Rechercher une destination..." id="searchInput" oninput="filterDests()">
+        <select id="filterCat" onchange="filterDests()">
+          <option value="">Toutes catégories</option>
+          <option value="plage">🏖 Plage & Soleil</option>
+          <option value="culture">🏛 Culture</option>
+          <option value="luxe">✨ Luxe</option>
+          <option value="aventure">🏔 Aventure</option>
+          <option value="afrique">🌍 Afrique</option>
+        </select>
+        <select id="filterPrice" onchange="filterDests()">
+          <option value="">Tous budgets</option>
+          <option value="500000">Moins de 500 000 FCFA</option>
+          <option value="1000000">Moins de 1 000 000 FCFA</option>
+          <option value="9999999">Plus de 1 000 000 FCFA</option>
+        </select>
+        <button class="btn-search">Rechercher</button>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Nos Destinations</h2>
+        <div class="gold-divider"></div>
+      </div>
+    </div>
+    <div class="destinations-grid" id="destinationsGrid"></div>
+  </div>
+  <div class="services-strip">
+    <div class="strip-item"><span>✓</span> Visa express en 48h</div>
+    <div class="strip-item"><span>✓</span> Meilleurs tarifs garantis</div>
+    <div class="strip-item"><span>✓</span> Assistance 24h/24</div>
+    <div class="strip-item"><span>✓</span> Paiement en plusieurs fois</div>
+  </div>
+</div>
+
+<!-- ===== PAGE 2: RÉSERVATION ===== -->
+<div id="page-reservation" class="page">
+  <div style="padding:2rem 2.5rem 0;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div><h2 class="section-title">Nouvelle Réservation</h2><div class="gold-divider"></div></div>
+    <button class="btn-add" onclick="openDestSelector()">+ Choisir une destination</button>
+  </div>
+  <div class="reservation-layout">
+    <div class="reservation-form">
+      <h3 class="form-title">Formulaire de réservation</h3>
+      <div class="form-section">
+        <div class="form-section-label">Destination choisie</div>
+        <div id="selectedDestDisplay" style="padding:0.9rem;background:var(--cream);border-radius:11px;color:var(--text-muted);font-style:italic;border:1.5px dashed var(--sand);">
+          Aucune destination sélectionnée — cliquez sur « Choisir une destination »
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-label">Voyageur principal</div>
+        <div class="form-row">
+          <div class="form-group"><label>Prénom</label><input type="text" id="r-prenom" placeholder="Kofi"></div>
+          <div class="form-group"><label>Nom</label><input type="text" id="r-nom" placeholder="Mensah"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Email</label><input type="email" id="r-email" placeholder="kofi@email.com"></div>
+          <div class="form-group"><label>Téléphone</label><input type="tel" id="r-tel" placeholder="+225 07 00 00 00 00"></div>
+        </div>
+        <div class="form-group"><label>Nationalité / Passeport</label><input type="text" id="r-nat" placeholder="Ivoirien(ne)…"></div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-label">Détails du séjour</div>
+        <div class="form-row">
+          <div class="form-group"><label>Date de départ</label><input type="date" id="r-depart"></div>
+          <div class="form-group"><label>Date de retour</label><input type="date" id="r-retour"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre de voyageurs</label>
+            <select id="r-voyageurs" onchange="updateSummary()">
+              <option value="1">1 voyageur</option><option value="2" selected>2 voyageurs</option>
+              <option value="3">3 voyageurs</option><option value="4">4 voyageurs</option><option value="5">5+ voyageurs</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Type de chambre</label>
+            <select id="r-chambre">
+              <option>Chambre standard</option><option>Chambre supérieure</option>
+              <option>Suite</option><option>Villa privée</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-label">Services additionnels</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.65rem;margin-bottom:0.9rem;">
+          <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.83rem;cursor:pointer;"><input type="checkbox"> 🛂 Assistance visa</label>
+          <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.83rem;cursor:pointer;"><input type="checkbox"> 🚐 Transfert aéroport</label>
+          <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.83rem;cursor:pointer;"><input type="checkbox"> 🏥 Assurance voyage</label>
+          <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.83rem;cursor:pointer;"><input type="checkbox"> 🍽 Pension complète</label>
+          <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.83rem;cursor:pointer;"><input type="checkbox"> 🎫 Billet d'avion inclus</label>
+          <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.83rem;cursor:pointer;"><input type="checkbox"> 🗺 Guide privé</label>
+        </div>
+        <div class="form-group"><label>Demandes particulières</label><textarea id="r-notes" placeholder="Régime alimentaire, célébration spéciale…"></textarea></div>
+      </div>
+      <button class="btn-primary" onclick="submitReservation()">✓ Confirmer la Réservation</button>
+    </div>
+    <div>
+      <div class="reservation-summary">
+        <div class="summary-title">📋 Récapitulatif</div>
+        <div id="summaryContent">
+          <div style="text-align:center;padding:2rem 0;opacity:0.45;font-size:0.86rem;">🌍 Sélectionnez une destination pour voir le récapitulatif</div>
+        </div>
+        <div style="margin-top:1.3rem;padding:0.9rem;background:rgba(184,148,58,0.1);border-radius:9px;border:1px solid rgba(184,148,58,0.2);">
+          <div style="font-size:0.72rem;color:var(--gold-light);font-weight:700;margin-bottom:0.4rem;">📞 BESOIN D'AIDE ?</div>
+          <div style="font-size:0.8rem;color:rgba(255,255,255,0.6);">Notre équipe est disponible 7j/7 pour vous accompagner.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE 3: CRM ===== -->
+<div id="page-crm" class="page">
+  <div class="crm-layout">
+    <div style="margin-bottom:1.5rem;"><h2 class="section-title">Gestion des Clients</h2><div class="gold-divider"></div></div>
+    <div class="crm-stats">
+      <div class="stat-card c1"><div class="stat-value" id="stat-total-clients">0</div><div class="stat-label">Total Clients</div></div>
+      <div class="stat-card c2"><div class="stat-value" id="stat-vip">0</div><div class="stat-label">Clients VIP</div></div>
+      <div class="stat-card c3"><div class="stat-value" id="stat-reservations">0</div><div class="stat-label">Réservations confirmées</div></div>
+      <div class="stat-card c4"><div class="stat-value" id="stat-ca">0</div><div class="stat-label">CA Total (FCFA)</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header">
+        <span class="table-title">Base Clients — Travel Expérience</span>
+        <button class="btn-add" onclick="openAddClient()">+ Nouveau client</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Client</th><th>Contact</th><th>Statut</th><th>Destinations</th><th>Total dépensé</th><th>Actions</th></tr></thead>
+          <tbody id="clientsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE 4: DEVIS & FACTURES ===== -->
+<div id="page-devis" class="page">
+  <div class="devis-layout">
+    <div style="margin-bottom:1.5rem;"><h2 class="section-title">Devis & Facturation</h2><div class="gold-divider"></div></div>
+    <div class="devis-stats">
+      <div class="stat-card c2"><div class="stat-value" id="stat-devis-count">0</div><div class="stat-label">Devis en attente</div></div>
+      <div class="stat-card c3"><div class="stat-value" id="stat-fact-count">0</div><div class="stat-label">Factures confirmées</div></div>
+      <div class="stat-card c1"><div class="stat-value" id="stat-ca-total">0</div><div class="stat-label">CA Confirmé (FCFA)</div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header">
+        <span class="table-title">Devis & Factures</span>
+        <button class="btn-add" onclick="openNewDevis()">+ Nouveau devis</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Référence</th><th>Client</th><th>Destination</th><th>Date</th><th>Montant (FCFA)</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="devisBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Choisir destination -->
+<div class="modal-overlay" id="destSelectorModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Choisir une Destination</span><button class="modal-close" onclick="closeModal('destSelectorModal')">✕</button></div>
+    <div class="dest-selector-grid" id="destSelectorGrid"></div>
+  </div>
+</div>
+
+<!-- MODAL: Ajouter client -->
+<div class="modal-overlay" id="addClientModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Nouveau Client</span><button class="modal-close" onclick="closeModal('addClientModal')">✕</button></div>
+    <div style="display:flex;flex-direction:column;gap:0.9rem;">
+      <div class="form-row">
+        <div class="form-group"><label>Prénom</label><input type="text" id="c-prenom" placeholder="Aminata"></div>
+        <div class="form-group"><label>Nom</label><input type="text" id="c-nom" placeholder="Diallo"></div>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="c-email" placeholder="aminata@email.com"></div>
+      <div class="form-group"><label>Téléphone</label><input type="tel" id="c-tel" placeholder="+221 77 000 00 00"></div>
+      <div class="form-group"><label>Statut</label><select id="c-statut"><option value="prospect">Prospect</option><option value="actif">Actif</option><option value="vip">VIP</option></select></div>
+      <button class="btn-primary" onclick="addClient()">Ajouter le client</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Nouveau devis -->
+<div class="modal-overlay" id="newDevisModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Nouveau Devis</span><button class="modal-close" onclick="closeModal('newDevisModal')">✕</button></div>
+    <div style="display:flex;flex-direction:column;gap:0.9rem;">
+      <div class="form-group"><label>Client</label><select id="d-client"></select></div>
+      <div class="form-group"><label>Destination</label><select id="d-dest"></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>Nb voyageurs</label><input type="number" id="d-voyageurs" value="2" min="1"></div>
+        <div class="form-group"><label>Durée (jours)</label><input type="number" id="d-duree" value="7" min="1"></div>
+      </div>
+      <div class="form-group"><label>Montant estimé (FCFA)</label><input type="number" id="d-montant" placeholder="850000"></div>
+      <button class="btn-primary" onclick="createDevis()">Créer le devis</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF PREVIEW -->
+<div class="pdf-preview" id="pdfPreview">
+  <div class="pdf-box">
+    <div class="pdf-toolbar">
+      <span class="pdf-toolbar-title" id="pdfTitle">Aperçu du document</span>
+      <div class="pdf-toolbar-actions">
+        <button class="btn-pdf-action btn-pdf-print" onclick="printDoc()">🖨 Imprimer / PDF</button>
+        <button class="btn-pdf-action btn-pdf-close" onclick="closePdfPreview()">✕ Fermer</button>
+      </div>
+    </div>
+    <div id="invoiceDoc"></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// =================== AUTH ===================
+const CREDENTIALS = { username: 'admin', password: 'travel2025' };
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if(u === CREDENTIALS.username && p === CREDENTIALS.password) {
+    document.getElementById('loginScreen').style.display = 'none';
+    showToast('👋 Bienvenue sur Travel Expérience !', 'success');
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginPass').value = '';
+  }
+}
+
+function doLogout() {
+  if(!confirm('Se déconnecter ?')) return;
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').style.display = 'none';
+}
+
+// =================== LOCAL STORAGE ===================
+function saveData() {
+  try {
+    localStorage.setItem('te_clients', JSON.stringify(clients));
+    localStorage.setItem('te_devis', JSON.stringify(devis));
+    localStorage.setItem('te_nextId', nextDevisId);
+    const badge = document.getElementById('saveBadge');
+    badge.textContent = '💾 Sauvegardé';
+    badge.style.color = '';
+  } catch(e) { console.warn('localStorage unavailable'); }
+}
+
+function loadData() {
+  try {
+    const c = localStorage.getItem('te_clients');
+    const d = localStorage.getItem('te_devis');
+    const n = localStorage.getItem('te_nextId');
+    if(c) clients = JSON.parse(c);
+    if(d) devis = JSON.parse(d);
+    if(n) nextDevisId = parseInt(n);
+  } catch(e) { console.warn('localStorage unavailable'); }
+}
+
+function markUnsaved() {
+  const badge = document.getElementById('saveBadge');
+  badge.textContent = '⚠️ Non sauvegardé';
+  badge.style.color = 'rgba(255,200,80,0.9)';
+}
+
+// =================== DATA ===================
+const DESTINATIONS = [
+  {id:1,name:'Bali',country:'Indonésie',cat:'plage',price:1150000,duration:'10 jours',stars:'★★★★☆',badge:'Bestseller',bg:'bg-bali',emoji:'🌴',promo:false},
+  {id:2,name:'Dubai',country:'Émirats Arabes',cat:'luxe',price:980000,duration:'7 jours',stars:'★★★★★',badge:'Luxe',bg:'bg-dubai',emoji:'🏙',promo:false},
+  {id:3,name:'Maldives',country:'Maldives',cat:'plage',price:2800000,duration:'8 jours',stars:'★★★★★',badge:'-15%',bg:'bg-bali',emoji:'🐠',promo:true},
+  {id:4,name:'Marrakech',country:'Maroc',cat:'culture',price:650000,duration:'6 jours',stars:'★★★★☆',badge:'Populaire',bg:'bg-maroc',emoji:'🌹',promo:false},
+  {id:5,name:'Istanbul',country:'Turquie',cat:'culture',price:750000,duration:'7 jours',stars:'★★★★☆',badge:'Coup de cœur',bg:'bg-istanbul',emoji:'🕌',promo:false},
+  {id:6,name:'Dakar',country:'Sénégal',cat:'afrique',price:350000,duration:'5 jours',stars:'★★★★☆',badge:'Afrique',bg:'bg-dakar',emoji:'🌍',promo:false},
+  {id:7,name:'Paris',country:'France',cat:'culture',price:890000,duration:'6 jours',stars:'★★★★★',badge:'Classique',bg:'bg-paris',emoji:'🗼',promo:false},
+  {id:8,name:'Abidjan',country:"Côte d'Ivoire",cat:'afrique',price:180000,duration:'3 jours',stars:'★★★☆☆',badge:'Local',bg:'bg-abidjan',emoji:'🌺',promo:false},
+];
+
+let clients = [
+  {id:1,prenom:'Mariama',nom:'Konaté',email:'mariama.k@email.com',tel:'+225 07 12 34 56',statut:'vip',destinations:['Bali','Dubai'],total:2130000},
+  {id:2,prenom:'Sébastien',nom:'Dembélé',email:'s.dembele@email.com',tel:'+221 77 98 76 54',statut:'actif',destinations:['Istanbul'],total:750000},
+  {id:3,prenom:'Fatoumata',nom:'Traoré',email:'fato.t@email.com',tel:'+223 70 11 22 33',statut:'prospect',destinations:[],total:0},
+  {id:4,prenom:'Jean-Pierre',nom:'Ouédraogo',email:'jp.o@email.com',tel:'+226 70 55 44 33',statut:'vip',destinations:['Maldives'],total:2800000},
+];
+
+let devis = [
+  {id:'TE-2025-001',clientId:1,dest:'Bali',date:'2025-01-15',montant:2300000,statut:'confirmé'},
+  {id:'TE-2025-002',clientId:2,dest:'Istanbul',date:'2025-02-01',montant:1500000,statut:'en-attente'},
+  {id:'TE-2025-003',clientId:4,dest:'Maldives',date:'2025-02-10',montant:5600000,statut:'confirmé'},
+  {id:'TE-2025-004',clientId:3,dest:'Paris',date:'2025-02-20',montant:890000,statut:'en-attente'},
+];
+
+let selectedDest = null;
+let nextDevisId = 5;
+
+function formatCFA(n) { return new Intl.NumberFormat('fr-FR').format(n) + ' FCFA'; }
+
+// =================== NAVIGATION ===================
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab,.mobile-nav-btn').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const order=['catalogue','reservation','crm','devis'];
+  const idx=order.indexOf(page);
+  const tabs=document.querySelectorAll('.nav-tab');
+  const mobs=document.querySelectorAll('.mobile-nav-btn');
+  if(idx>=0){if(tabs[idx])tabs[idx].classList.add('active');if(mobs[idx])mobs[idx].classList.add('active');}
+  if(page==='crm') renderCRM();
+  if(page==='devis') renderDevis();
+}
+
+// =================== CATALOGUE ===================
+function renderDestCard(d) {
+  return `<div class="dest-card" onclick="bookDest(${d.id})">
+    <div class="dest-image">
+      <div class="dest-image-bg ${d.bg}">
+        <div class="dest-image-inner">
+          <span class="dest-emoji">${d.emoji}</span>
+          <span class="dest-emoji-label">${d.name}</span>
+        </div>
+      </div>
+      <div class="dest-badge ${d.promo?'promo':''}">${d.badge}</div>
+    </div>
+    <div class="dest-body">
+      <div class="dest-country">${d.country}</div>
+      <div class="dest-name">${d.name}</div>
+      <div class="dest-meta"><span>📅 ${d.duration}</span><span>${d.stars}</span><span>🏷 ${d.cat}</span></div>
+      <div class="dest-footer">
+        <div class="dest-price">
+          <span class="dest-price-label">À partir de</span>
+          ${formatCFA(d.price)} <span>/ pers.</span>
+        </div>
+        <button class="btn-book" onclick="event.stopPropagation();bookDest(${d.id})">Réserver</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDestinations(list) {
+  document.getElementById('destinationsGrid').innerHTML = list.length
+    ? list.map(renderDestCard).join('')
+    : `<p style="color:var(--text-muted);padding:2rem;grid-column:1/-1;">Aucune destination trouvée.</p>`;
+}
+
+function filterDests() {
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const cat=document.getElementById('filterCat').value;
+  const pm=document.getElementById('filterPrice').value;
+  renderDestinations(DESTINATIONS.filter(d=>
+    (d.name.toLowerCase().includes(q)||d.country.toLowerCase().includes(q)) &&
+    (!cat||d.cat===cat) && (!pm||d.price<=parseInt(pm))
+  ));
+}
+
+function bookDest(id) { selectDest(id); showPage('reservation'); }
+
+// =================== RÉSERVATION ===================
+function openDestSelector() {
+  document.getElementById('destSelectorGrid').innerHTML = DESTINATIONS.map(d=>`
+    <div class="dest-selector-item ${selectedDest&&selectedDest.id===d.id?'selected':''}" onclick="selectDest(${d.id})">
+      <span style="font-size:1.4rem;">${d.emoji}</span>
+      <div class="dest-selector-name">${d.name}</div>
+      <div class="dest-selector-price">À partir de ${formatCFA(d.price)} / pers. • ${d.duration}</div>
+    </div>`).join('');
+  openModal('destSelectorModal');
+}
+
+function selectDest(id) {
+  selectedDest=DESTINATIONS.find(d=>d.id===id);
+  closeModal('destSelectorModal');
+  document.getElementById('selectedDestDisplay').innerHTML=`
+    <div style="display:flex;align-items:center;gap:0.9rem;">
+      <span style="font-size:2rem;">${selectedDest.emoji}</span>
+      <div>
+        <div style="font-weight:700;font-size:1rem;color:var(--deep);">${selectedDest.name}, ${selectedDest.country}</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);">${selectedDest.duration} • À partir de ${formatCFA(selectedDest.price)} / pers.</div>
+      </div>
+    </div>`;
+  updateSummary();
+}
+
+function updateSummary() {
+  if(!selectedDest) return;
+  const v=parseInt(document.getElementById('r-voyageurs')?.value||2);
+  document.getElementById('summaryContent').innerHTML=`
+    <div class="summary-dest">
+      <div style="font-size:1.7rem;margin-bottom:0.4rem;">${selectedDest.emoji}</div>
+      <div class="summary-dest-name">${selectedDest.name}</div>
+      <div class="summary-dest-sub">${selectedDest.country} • ${selectedDest.duration}</div>
+    </div>
+    <div class="summary-line"><span>Prix / personne</span><span>À partir de ${formatCFA(selectedDest.price)}</span></div>
+    <div class="summary-line"><span>Voyageurs</span><span>${v}</span></div>
+    <div class="summary-line"><span>Hébergement</span><span>Inclus</span></div>
+    <div class="summary-line"><span>Vols</span><span>Sur devis</span></div>
+    <div class="summary-line total"><span>Total estimé</span><span>${formatCFA(selectedDest.price*v)}</span></div>
+    <div style="margin-top:0.75rem;font-size:0.7rem;color:rgba(255,255,255,0.3);">* Prix indicatif, hors options et visa</div>`;
+}
+
+function submitReservation() {
+  if(!selectedDest){showToast('⚠️ Veuillez sélectionner une destination','error');return;}
+  const prenom=document.getElementById('r-prenom').value;
+  const nom=document.getElementById('r-nom').value;
+  if(!prenom||!nom){showToast('⚠️ Veuillez remplir les informations voyageur','error');return;}
+  // Auto-create a devis from the reservation
+  const id=`TE-2025-00${nextDevisId++}`;
+  const v=parseInt(document.getElementById('r-voyageurs').value)||2;
+  // Try to find or create the client
+  let client=clients.find(c=>c.email===document.getElementById('r-email').value);
+  if(!client){
+    client={id:Date.now(),prenom,nom,email:document.getElementById('r-email').value,tel:document.getElementById('r-tel').value,statut:'prospect',destinations:[],total:0};
+    clients.push(client);
+  }
+  devis.push({id,clientId:client.id,dest:selectedDest.name,date:new Date().toISOString().split('T')[0],montant:selectedDest.price*v,statut:'en-attente'});
+  saveData();
+  showToast(`✈️ Réservation confirmée ! Devis ${id} créé pour ${prenom} ${nom}`, 'success');
+}
+
+// =================== CRM ===================
+const avatarColors=['#1A3830','#B8943A','#3A2A6A','#2D7A5A','#5A3A1A','#1A4A6A'];
+
+function renderCRM() {
+  const ca=clients.reduce((s,c)=>s+c.total,0);
+  document.getElementById('stat-total-clients').textContent=clients.length;
+  document.getElementById('stat-vip').textContent=clients.filter(c=>c.statut==='vip').length;
+  document.getElementById('stat-reservations').textContent=devis.filter(d=>d.statut==='confirmé').length;
+  document.getElementById('stat-ca').textContent=new Intl.NumberFormat('fr-FR').format(ca);
+  document.getElementById('clientsBody').innerHTML=clients.map((c,i)=>`
+    <tr>
+      <td><div class="client-name-cell">
+        <div class="client-avatar" style="background:${avatarColors[i%avatarColors.length]}">${c.prenom[0]}${c.nom[0]}</div>
+        <div><div style="font-weight:600;">${c.prenom} ${c.nom}</div></div>
+      </div></td>
+      <td><div style="font-size:0.83rem;">${c.email||'—'}</div><div style="font-size:0.76rem;color:var(--text-muted);">${c.tel||'—'}</div></td>
+      <td><span class="status-badge ${c.statut}">${c.statut.toUpperCase()}</span></td>
+      <td style="font-size:0.83rem;">${c.destinations.length?c.destinations.join(', '):'—'}</td>
+      <td class="amount">${formatCFA(c.total)}</td>
+      <td><button onclick="deleteClient(${c.id})" style="background:none;border:none;cursor:pointer;color:var(--danger);" title="Supprimer">🗑</button></td>
+    </tr>`).join('');
+}
+
+function openAddClient(){openModal('addClientModal');}
+
+function addClient(){
+  const prenom=document.getElementById('c-prenom').value.trim();
+  const nom=document.getElementById('c-nom').value.trim();
+  if(!prenom||!nom){showToast('⚠️ Prénom et nom requis','error');return;}
+  clients.push({id:Date.now(),prenom,nom,email:document.getElementById('c-email').value,tel:document.getElementById('c-tel').value,statut:document.getElementById('c-statut').value,destinations:[],total:0});
+  saveData(); closeModal('addClientModal'); renderCRM();
+  showToast(`✓ Client ${prenom} ${nom} ajouté et sauvegardé`,'success');
+  ['c-prenom','c-nom','c-email','c-tel'].forEach(id=>document.getElementById(id).value='');
+}
+
+function deleteClient(id){
+  if(!confirm('Supprimer ce client ?')) return;
+  clients=clients.filter(c=>c.id!==id);
+  saveData(); renderCRM();
+  showToast('Client supprimé','success');
+}
+
+// =================== DEVIS ===================
+function renderDevis(){
+  document.getElementById('stat-devis-count').textContent=devis.filter(d=>d.statut==='en-attente').length;
+  document.getElementById('stat-fact-count').textContent=devis.filter(d=>d.statut==='confirmé').length;
+  const ca=devis.filter(d=>d.statut==='confirmé').reduce((s,d)=>s+d.montant,0);
+  document.getElementById('stat-ca-total').textContent=new Intl.NumberFormat('fr-FR').format(ca);
+  document.getElementById('devisBody').innerHTML=devis.map(d=>{
+    const cl=clients.find(c=>c.id===d.clientId);
+    return `<tr>
+      <td style="font-weight:700;color:var(--gold);font-family:'Playfair Display',serif;">${d.id}</td>
+      <td>${cl?cl.prenom+' '+cl.nom:'—'}</td>
+      <td>${d.dest}</td>
+      <td>${d.date}</td>
+      <td class="amount">${formatCFA(d.montant)}</td>
+      <td><span class="status-badge ${d.statut}">${d.statut.replace('-',' ').toUpperCase()}</span></td>
+      <td style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
+        <button onclick="previewDocument('${d.id}')" style="background:var(--deep);color:white;border:none;border-radius:6px;padding:0.28rem 0.6rem;cursor:pointer;font-size:0.76rem;font-weight:600;" title="Aperçu PDF">🖨</button>
+        ${d.statut==='en-attente'?`<button onclick="confirmDevis('${d.id}')" style="background:var(--success);color:white;border:none;border-radius:6px;padding:0.28rem 0.6rem;cursor:pointer;font-size:0.76rem;font-weight:600;">✓</button>`:''}
+        <button onclick="deleteDevis('${d.id}')" style="background:none;border:none;cursor:pointer;color:var(--danger);">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openNewDevis(){
+  document.getElementById('d-client').innerHTML=clients.map(c=>`<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
+  document.getElementById('d-dest').innerHTML=DESTINATIONS.map(d=>`<option value="${d.name}">${d.emoji} ${d.name}</option>`).join('');
+  openModal('newDevisModal');
+}
+
+function createDevis(){
+  const clientId=parseInt(document.getElementById('d-client').value);
+  const dest=document.getElementById('d-dest').value;
+  const montant=parseFloat(document.getElementById('d-montant').value);
+  if(!montant){showToast('⚠️ Veuillez saisir un montant','error');return;}
+  const id=`TE-2025-00${nextDevisId++}`;
+  devis.push({id,clientId,dest,date:new Date().toISOString().split('T')[0],montant,statut:'en-attente'});
+  saveData(); closeModal('newDevisModal'); renderDevis();
+  showToast(`📄 Devis ${id} créé et sauvegardé`,'success');
+}
+
+function confirmDevis(id){
+  const d=devis.find(x=>x.id===id);
+  if(d){
+    d.statut='confirmé';
+    // Update client total
+    const c=clients.find(x=>x.id===d.clientId);
+    if(c){c.total=(c.total||0)+d.montant; if(!c.destinations.includes(d.dest))c.destinations.push(d.dest);}
+    saveData(); renderDevis();
+    showToast(`✓ Devis ${id} confirmé — Facture générée`,'success');
+  }
+}
+
+function deleteDevis(id){
+  devis=devis.filter(d=>d.id!==id);
+  saveData(); renderDevis();
+  showToast('Devis supprimé','success');
+}
+
+// =================== PDF / PRINT ===================
+function previewDocument(id) {
+  const d = devis.find(x=>x.id===id);
+  if(!d) return;
+  const cl = clients.find(c=>c.id===d.clientId) || {prenom:'Client',nom:'',email:'',tel:''};
+  const isFacture = d.statut === 'confirmé';
+  const tva = Math.round(d.montant * 0.18);
+  const ht = d.montant - tva;
+
+  document.getElementById('pdfTitle').textContent = isFacture ? `Facture ${d.id}` : `Devis ${d.id}`;
+  document.getElementById('invoiceDoc').innerHTML = `
+    <div class="inv-header">
+      <div>
+        <div class="inv-logo-text">🗝️ TRAVEL EXPÉRIENCE</div>
+        <div class="inv-logo-sub">Assistance Visa · Billeterie · Tour Opérateur</div>
+        <div style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-muted);">
+          📍 Votre adresse, Abidjan / Dakar<br>
+          📞 +225 00 00 00 00 00<br>
+          ✉ contact@travelexperience.com
+        </div>
+      </div>
+      <div class="inv-meta">
+        <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.3rem;">${isFacture?'FACTURE':'DEVIS'}</div>
+        <div class="inv-ref">${d.id}</div>
+        <div class="inv-date">Date : ${d.date}</div>
+        <div style="margin-top:0.75rem;">
+          <span class="inv-status-stamp ${d.statut}">${isFacture?'✓ CONFIRMÉ':'⏳ EN ATTENTE'}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="inv-parties">
+      <div>
+        <div class="inv-party-label">Émis par</div>
+        <div class="inv-party-name">Travel Expérience</div>
+        <div class="inv-party-detail">Agence de voyage agréée</div>
+        <div class="inv-party-detail">contact@travelexperience.com</div>
+      </div>
+      <div>
+        <div class="inv-party-label">Client</div>
+        <div class="inv-party-name">${cl.prenom} ${cl.nom}</div>
+        <div class="inv-party-detail">${cl.email||'—'}</div>
+        <div class="inv-party-detail">${cl.tel||'—'}</div>
+      </div>
+    </div>
+
+    <table class="inv-table">
+      <thead>
+        <tr><th>Désignation</th><th>Destination</th><th>Durée</th><th>Montant HT</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Forfait voyage tout compris</td>
+          <td>${d.dest}</td>
+          <td>—</td>
+          <td>${formatCFA(ht)}</td>
+        </tr>
+        <tr>
+          <td colspan="3" style="text-align:right;color:var(--text-muted);font-size:0.82rem;">Assistance Visa & Services inclus</td>
+          <td style="color:var(--text-muted);">Inclus</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="display:flex;justify-content:flex-end;">
+      <div class="inv-totals">
+        <div class="inv-total-line"><span>Sous-total HT</span><span>${formatCFA(ht)}</span></div>
+        <div class="inv-total-line"><span>TVA (18%)</span><span>${formatCFA(tva)}</span></div>
+        <div class="inv-total-line grand"><span>TOTAL TTC</span><span>${formatCFA(d.montant)}</span></div>
+      </div>
+    </div>
+
+    ${isFacture ? `
+    <div style="margin-top:1.5rem;padding:1rem;background:rgba(45,122,90,0.06);border-radius:10px;border:1px solid rgba(45,122,90,0.2);">
+      <div style="font-weight:700;font-size:0.85rem;color:var(--success);margin-bottom:0.35rem;">💳 Informations de paiement</div>
+      <div style="font-size:0.82rem;color:var(--text-muted);">
+        Banque : [Votre Banque] &nbsp;|&nbsp; Compte : [Numéro de compte] &nbsp;|&nbsp; Référence : ${d.id}
+      </div>
+    </div>` : `
+    <div style="margin-top:1.5rem;padding:1rem;background:rgba(184,148,58,0.07);border-radius:10px;border:1px solid rgba(184,148,58,0.2);">
+      <div style="font-weight:700;font-size:0.85rem;color:var(--gold);margin-bottom:0.35rem;">⏰ Validité du devis</div>
+      <div style="font-size:0.82rem;color:var(--text-muted);">Ce devis est valable 30 jours à compter de sa date d'émission.</div>
+    </div>`}
+
+    <div class="inv-footer">
+      <div>Travel Expérience — Assistance Visa · Billeterie · Tour Opérateur</div>
+      <div style="margin-top:0.3rem;">Merci de nous faire confiance pour votre voyage ✈️</div>
+    </div>`;
+
+  document.getElementById('pdfPreview').classList.add('open');
+}
+
+function printDoc() {
+  const content = document.getElementById('invoiceDoc').innerHTML;
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Document Travel Expérience</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box;}
+      body{font-family:'DM Sans',sans-serif;color:#1A3830;background:white;padding:2rem;}
+      .inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid #E5DCC8;}
+      .inv-logo-text{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#1A3830;}
+      .inv-logo-sub{font-size:0.72rem;color:#6B7C6A;letter-spacing:0.1em;text-transform:uppercase;}
+      .inv-meta{text-align:right;}
+      .inv-ref{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:#B8943A;}
+      .inv-date{font-size:0.82rem;color:#6B7C6A;}
+      .inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem;}
+      .inv-party-label{font-size:0.7rem;font-weight:700;color:#B8943A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;}
+      .inv-party-name{font-weight:700;font-size:1rem;color:#1A3830;}
+      .inv-party-detail{font-size:0.85rem;color:#6B7C6A;margin-top:0.15rem;}
+      .inv-table{width:100%;border-collapse:collapse;margin-bottom:1.5rem;}
+      .inv-table th{background:#1A3830;color:white;padding:0.65rem 1rem;text-align:left;font-size:0.8rem;font-weight:600;}
+      .inv-table td{padding:0.75rem 1rem;border-bottom:1px solid #E5DCC8;font-size:0.88rem;}
+      .inv-totals{margin-left:auto;width:260px;}
+      .inv-total-line{display:flex;justify-content:space-between;padding:0.4rem 0;font-size:0.88rem;color:#6B7C6A;}
+      .inv-total-line.grand{border-top:2px solid #1A3830;margin-top:0.5rem;padding-top:0.75rem;font-weight:700;font-size:1.05rem;color:#1A3830;}
+      .inv-footer{margin-top:2rem;padding-top:1.5rem;border-top:1px solid #E5DCC8;font-size:0.78rem;color:#6B7C6A;text-align:center;}
+      .inv-status-stamp{display:inline-block;padding:0.4rem 1.2rem;border-radius:8px;font-weight:700;font-size:0.85rem;margin-bottom:0.5rem;}
+      .inv-status-stamp.confirmé{background:rgba(45,122,90,0.12);color:#2D7A5A;border:2px solid #2D7A5A;}
+      .inv-status-stamp.en-attente{background:rgba(184,148,58,0.12);color:#B8943A;border:2px solid #B8943A;}
+      @media print{body{padding:1rem;}}
+    </style>
+    </head><body>${content}</body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(), 500);
+}
+
+function closePdfPreview() { document.getElementById('pdfPreview').classList.remove('open'); }
+
+// =================== UTILS ===================
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function showToast(msg, type='success') {
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 3800);
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+});
+
+document.getElementById('pdfPreview').addEventListener('click',function(e){
+  if(e.target===this) closePdfPreview();
+});
+
+// Auto-save when data changes (mark unsaved on tab change)
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) saveData(); });
+
+// =================== INIT ===================
+loadData();
+renderDestinations(DESTINATIONS);
+saveData(); // Initial save badge display
+</script>
+</body>
+</html>
